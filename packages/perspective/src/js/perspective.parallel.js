@@ -7,7 +7,7 @@
  *
  */
 
-import {ScriptPath} from "./utils.js";
+import {ScriptPath, detectNode} from "./utils.js";
 
 import {TYPE_AGGREGATES, AGGREGATE_DEFAULTS, TYPE_FILTERS, FILTER_DEFAULTS, SORT_ORDERS} from "./defaults.js";
 
@@ -175,22 +175,33 @@ class WebSocketWorker extends worker {
     }
 }
 
-export default {
-    worker: function(url) {
-        if (url) {
-            return new WebSocketWorker(url);
-        } else {
-            return new WebWorker();
-        }
-    },
+let mod;
 
-    TYPE_AGGREGATES: TYPE_AGGREGATES,
+if (detectNode()) {
+    // eslint-disable-next-line no-undef
+    mod = eval(`require("./perspective.node.js")`);
+} else {
+    mod = {
+        worker: function(url) {
+            if (url) {
+                return new WebSocketWorker(url);
+            } else {
+                return new WebWorker();
+            }
+        },
 
-    TYPE_FILTERS: TYPE_FILTERS,
+        TYPE_AGGREGATES: TYPE_AGGREGATES,
 
-    AGGREGATE_DEFAULTS: AGGREGATE_DEFAULTS,
+        TYPE_FILTERS: TYPE_FILTERS,
 
-    FILTER_DEFAULTS: FILTER_DEFAULTS,
+        AGGREGATE_DEFAULTS: AGGREGATE_DEFAULTS,
 
-    SORT_ORDERS: SORT_ORDERS
-};
+        FILTER_DEFAULTS: FILTER_DEFAULTS,
+
+        SORT_ORDERS: SORT_ORDERS
+    };
+}
+
+for (let prop of Object.keys(mod)) {
+    exports[prop] = mod[prop];
+}

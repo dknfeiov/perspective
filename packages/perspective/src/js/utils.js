@@ -24,6 +24,17 @@ export function bindall(self) {
 }
 
 /**
+ * Detect Node.js.
+ *
+ * Returns
+ * -------
+ * True if the current script is running in Node.js.
+ */
+export function detectNode() {
+    return typeof window === "undefined";
+}
+
+/**
  * Detect Internet Explorer.
  *
  * Returns
