@@ -189,9 +189,19 @@ class Row extends HTMLElement {
         };
     }
 
-    connectedCallback() {
-        let li = this.shadowRoot.querySelector(".row_draggable");
-        li.addEventListener("dragstart", ev => {
+    _register_ids() {
+        this._li = this.shadowRoot.querySelector(".row_draggable");
+        this._visible = this.shadowRoot.querySelector(".is_visible");
+        this._row_close = this.shadowRoot.querySelector("#row_close");
+        this._agg_dropdown = this.shadowRoot.querySelector("#column_aggregate");
+        this._sort_order = this.shadowRoot.querySelector("#sort_order");
+        this._filter_operand = this.shadowRoot.querySelector("#filter_operand");
+        this._filter_operator = this.shadowRoot.querySelector("#filter_operator");
+        this._edit_computed_column_button = this.shadowRoot.querySelector("#row_edit");
+    }
+
+    _register_callbacks() {
+        this._li.addEventListener("dragstart", ev => {
             if (this.hasAttribute("filter")) {
                 let {operator, operand} = JSON.parse(this.getAttribute("filter"));
                 ev.dataTransfer.setData("text", JSON.stringify([this.getAttribute("name"), operator, operand, this.getAttribute("type"), this.getAttribute("aggregate")]));
@@ -203,39 +213,29 @@ class Row extends HTMLElement {
             }
             this.dispatchEvent(new CustomEvent("row-drag"));
         });
-        li.addEventListener("dragend", () => {
+        this._li.addEventListener("dragend", () => {
             this.dispatchEvent(new CustomEvent("row-dragend"));
         });
-        let visible = this.shadowRoot.querySelector(".is_visible");
-        visible.addEventListener("mousedown", event => this.dispatchEvent(new CustomEvent("visibility-clicked", {detail: event})));
-        this.shadowRoot.querySelector("#row_close").addEventListener("mousedown", event => this.dispatchEvent(new CustomEvent("close-clicked", {detail: event})));
-
-        let agg_dropdown = this.shadowRoot.querySelector("#column_aggregate");
-        agg_dropdown.addEventListener("change", event => {
-            this.setAttribute("aggregate", agg_dropdown.value);
+        this._visible.addEventListener("mousedown", event => this.dispatchEvent(new CustomEvent("visibility-clicked", {detail: event})));
+        this._row_close.addEventListener("mousedown", event => this.dispatchEvent(new CustomEvent("close-clicked", {detail: event})));
+        this._agg_dropdown.addEventListener("change", event => {
+            this.setAttribute("aggregate", this._agg_dropdown.value);
             this.dispatchEvent(new CustomEvent("aggregate-selected", {detail: event}));
         });
-
-        let sort_order = this.shadowRoot.querySelector("#sort_order");
-        sort_order.addEventListener("click", event => {
+        this._sort_order.addEventListener("click", event => {
             const current = this.getAttribute("sort-order");
             const order = (perspective.SORT_ORDERS.indexOf(current) + 1) % 5;
             this.setAttribute("sort-order", perspective.SORT_ORDERS[order]);
             this.dispatchEvent(new CustomEvent("sort-order", {detail: event}));
         });
 
-        let filter_operand = this.shadowRoot.querySelector("#filter_operand");
-        let filter_operator = this.shadowRoot.querySelector("#filter_operator");
-        let debounced_filter = _.debounce(event => this._update_filter(event), 50);
-        filter_operator.addEventListener("change", () => {
-            filter_operator.style.width = get_text_width(filter_operator.value);
-            const filter_input = this.shadowRoot.querySelector("#filter_operand");
-            filter_input.style.width = get_text_width("" + filter_operand.value, 30);
+        const debounced_filter = _.debounce(event => this._update_filter(event), 50);
+        this._filter_operator.addEventListener("change", () => {
+            this._filter_operator.style.width = get_text_width(this._filter_operator.value);
+            this._filter_operand.style.width = get_text_width("" + this._filter_operand.value, 30);
             debounced_filter();
         });
-
-        const edit_computed_column_button = this.shadowRoot.querySelector("#row_edit");
-        edit_computed_column_button.addEventListener("click", () => {
+        this._edit_computed_column_button.addEventListener("click", () => {
             this.dispatchEvent(
                 new CustomEvent("perspective-computed-column-edit", {
                     bubbles: true,
@@ -243,5 +243,10 @@ class Row extends HTMLElement {
                 })
             );
         });
+    }
+
+    connectedCallback() {
+        this._register_ids();
+        this._register_callbacks();
     }
 }
