@@ -153,6 +153,17 @@ class Row extends HTMLElement {
         // computed_input_column.textContent = data.input_column;
     }
 
+    _get_computed_data() {
+        const data = JSON.parse(this.getAttribute("computed_column"));
+        return {
+            column_name: data.column_name,
+            input_columns: data.input_columns,
+            input_type: data.input_type,
+            computation: data.computation,
+            type: data.type
+        };
+    }
+
     _update_filter(event) {
         let filter_operand = this.shadowRoot.querySelector("#filter_operand");
         let filter_operator = this.shadowRoot.querySelector("#filter_operator");
@@ -178,15 +189,17 @@ class Row extends HTMLElement {
         this.dispatchEvent(new CustomEvent("filter-selected", {detail: event}));
     }
 
-    _get_computed_data() {
-        const data = JSON.parse(this.getAttribute("computed_column"));
-        return {
-            column_name: data.column_name,
-            input_columns: data.input_columns,
-            input_type: data.input_type,
-            computation: data.computation,
-            type: data.type
-        };
+    _set_data_transfer(event) {
+        if (this.hasAttribute("filter")) {
+            let {operator, operand} = JSON.parse(this.getAttribute("filter"));
+            event.dataTransfer.setData("text", JSON.stringify([this.getAttribute("name"), operator, operand, this.getAttribute("type"), this.getAttribute("aggregate")]));
+        } else {
+            event.dataTransfer.setData(
+                "text",
+                JSON.stringify([this.getAttribute("name"), perspective.FILTER_DEFAULTS[this.getAttribute("type")], undefined, this.getAttribute("type"), this.getAttribute("aggregate")])
+            );
+        }
+        this.dispatchEvent(new CustomEvent("row-drag"));
     }
 
     _register_ids() {
@@ -201,18 +214,7 @@ class Row extends HTMLElement {
     }
 
     _register_callbacks() {
-        this._li.addEventListener("dragstart", ev => {
-            if (this.hasAttribute("filter")) {
-                let {operator, operand} = JSON.parse(this.getAttribute("filter"));
-                ev.dataTransfer.setData("text", JSON.stringify([this.getAttribute("name"), operator, operand, this.getAttribute("type"), this.getAttribute("aggregate")]));
-            } else {
-                ev.dataTransfer.setData(
-                    "text",
-                    JSON.stringify([this.getAttribute("name"), perspective.FILTER_DEFAULTS[this.getAttribute("type")], undefined, this.getAttribute("type"), this.getAttribute("aggregate")])
-                );
-            }
-            this.dispatchEvent(new CustomEvent("row-drag"));
-        });
+        this._li.addEventListener("dragstart", this._set_data_transfer.bind(this));
         this._li.addEventListener("dragend", () => {
             this.dispatchEvent(new CustomEvent("row-dragend"));
         });
@@ -232,7 +234,8 @@ class Row extends HTMLElement {
         const debounced_filter = _.debounce(event => this._update_filter(event), 50);
         this._filter_operator.addEventListener("change", () => {
             this._filter_operator.style.width = get_text_width(this._filter_operator.value);
-            this._filter_operand.style.width = get_text_width("" + this._filter_operand.value, 30);
+            const filter_input = this.shadowRoot.querySelector("#filter_operand");
+            filter_input.style.width = get_text_width("" + this._filter_operand.value, 30);
             debounced_filter();
         });
         this._edit_computed_column_button.addEventListener("click", () => {

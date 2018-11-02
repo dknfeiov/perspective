@@ -149,20 +149,20 @@ export function column_drop(ev) {
     this._update_column_view();
 }
 
-export function dragEnter(ev) {
+export function drag_enter(ev) {
     ev.stopPropagation();
     ev.preventDefault();
     ev.currentTarget.classList.add("dropping");
 }
 
-export function allowDrop(ev) {
+export function allow_drop(ev) {
     ev.stopPropagation();
     ev.preventDefault();
     ev.currentTarget.classList.add("dropping");
     ev.dataTransfer.dropEffect = "move";
 }
 
-export function disallowDrop(ev) {
+export function disallow_drop(ev) {
     if (ev.currentTarget == ev.target) {
         ev.stopPropagation();
         ev.preventDefault();
