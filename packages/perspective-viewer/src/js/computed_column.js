@@ -17,7 +17,7 @@ import template from "../html/computed_column.html";
 
 import style from "../less/computed_column.less";
 
-import {disallow_drop} from "./dragdrop.js";
+import {disallow_drop} from "./view/dragdrop.js";
 
 polyfill({});
 

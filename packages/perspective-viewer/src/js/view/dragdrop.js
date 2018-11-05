@@ -7,7 +7,7 @@
  *
  */
 
-import {detectIE} from "./utils.js";
+import {detectIE} from "../utils.js";
 
 function calc_index(event) {
     if (this._active_columns.children.length == 0) {
