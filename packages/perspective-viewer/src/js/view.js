@@ -147,18 +147,20 @@ function sort_order_clicked() {
  *
  */
 
-let __WORKER__;
-
-function get_worker() {
-    if (__WORKER__ === undefined) {
-        __WORKER__ = perspective.worker();
-    }
-    return __WORKER__;
-}
+let worker = (function() {
+    let __WORKER__;
+    return {
+        getInstance: function() {
+            if (__WORKER__ === undefined) {
+                __WORKER__ = perspective.worker();
+            }
+            return __WORKER__;
+        }
+    };
+})();
 
 if (document.currentScript && document.currentScript.hasAttribute("preload")) {
-    // TODO: make sure it works
-    get_worker();
+    worker.getInstance();
 }
 
 // FIXME: split
@@ -1202,7 +1204,7 @@ class View extends ViewPrivate {
         if (this._table) {
             return this._table._worker;
         }
-        return get_worker();
+        return worker.getInstance();
     }
 
     /**
@@ -1246,7 +1248,7 @@ class View extends ViewPrivate {
         if (data.hasOwnProperty("_name")) {
             table = data;
         } else {
-            table = get_worker().table(data, options);
+            table = worker.getInstance().table(data, options);
             table._owner_viewer = this;
         }
         let _promises = [loadTable.call(this, table)];
