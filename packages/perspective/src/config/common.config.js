@@ -52,7 +52,18 @@ module.exports = function() {
                     loader: "babel-loader",
                     options: {
                         presets: ["env"],
-                        plugins: ["transform-decorators-legacy", "transform-custom-element-classes", "transform-runtime", "transform-object-rest-spread", ["transform-es2015-for-of", {loose: true}]]
+                        plugins: [
+                            "transform-decorators-legacy",
+                            "transform-custom-element-classes",
+                            [
+                                "transform-runtime",
+                                {
+                                    polyfill: false
+                                }
+                            ],
+                            "transform-object-rest-spread",
+                            ["transform-es2015-for-of", {loose: true}]
+                        ]
                     }
                 }
             ]
