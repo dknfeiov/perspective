@@ -228,7 +228,7 @@ bindTemplate(TEMPLATE, style)(
                 const float_formatter = null_formatter(
                     new this.grid.localization.NumberFormatter("en-US", {
                         minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
+                        maximumFractionDigits: 5
                     })
                 );
                 this.grid.localization.add("FinanceFloat", float_formatter);
